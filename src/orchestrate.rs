@@ -294,13 +294,15 @@ pub fn run_orchestrate(args: OrchestrateArgs) -> Result<()> {
         maybe_write_orchestrate_pipeline_summary(
             &args,
             orchestrate_started.elapsed().as_millis(),
-            ingest_stage,
-            reconcile_stage,
-            monthly_stage,
-            daily_stage,
-            aggregate_cache,
-            bench_stage,
-            perf_gate_stage,
+            PipelineStageSummaries {
+                ingest: ingest_stage,
+                pricing_reconcile: reconcile_stage,
+                monthly: monthly_stage,
+                daily: daily_stage,
+                aggregate_cache,
+                bench: bench_stage,
+                perf_gate: perf_gate_stage,
+            },
         )?;
         return Ok(());
     }
@@ -348,13 +350,15 @@ pub fn run_orchestrate(args: OrchestrateArgs) -> Result<()> {
     maybe_write_orchestrate_pipeline_summary(
         &args,
         orchestrate_started.elapsed().as_millis(),
-        ingest_stage,
-        reconcile_stage,
-        monthly_stage,
-        daily_stage,
-        aggregate_cache,
-        bench_stage,
-        perf_gate_stage,
+        PipelineStageSummaries {
+            ingest: ingest_stage,
+            pricing_reconcile: reconcile_stage,
+            monthly: monthly_stage,
+            daily: daily_stage,
+            aggregate_cache,
+            bench: bench_stage,
+            perf_gate: perf_gate_stage,
+        },
     )?;
 
     Ok(())
@@ -419,13 +423,7 @@ pub struct OrchestrateReconcileSummaryPaths {
 pub fn maybe_write_orchestrate_pipeline_summary(
     args: &OrchestrateArgs,
     duration_ms: u128,
-    ingest: OrchestrateIngestStageSummary,
-    pricing_reconcile: OrchestratePricingReconcileStageSummary,
-    monthly: OrchestrateStageSummary,
-    daily: OrchestrateStageSummary,
-    aggregate_cache: OrchestrateAggregateCacheMetrics,
-    bench: OrchestrateBenchStageSummary,
-    perf_gate: OrchestrateStageSummary,
+    stages: PipelineStageSummaries,
 ) -> Result<()> {
     let Some(path) = args.pipeline_summary_path.as_ref() else {
         return Ok(());
@@ -438,13 +436,13 @@ pub fn maybe_write_orchestrate_pipeline_summary(
         pricing: args.pricing.display().to_string(),
         on_unpriced: on_unpriced_to_str(args.on_unpriced).to_string(),
         duration_ms,
-        ingest,
-        pricing_reconcile,
-        monthly,
-        daily,
-        aggregate_cache,
-        bench,
-        perf_gate,
+        ingest: stages.ingest,
+        pricing_reconcile: stages.pricing_reconcile,
+        monthly: stages.monthly,
+        daily: stages.daily,
+        aggregate_cache: stages.aggregate_cache,
+        bench: stages.bench,
+        perf_gate: stages.perf_gate,
         ui_snapshot_path: args
             .ui_snapshot_path
             .as_ref()
@@ -602,7 +600,7 @@ pub fn orchestrate_aggregate_cache_lookup(
     };
     if entry.pricing_hash == key.pricing_hash && entry.events_fingerprint == key.events_fingerprint
     {
-        return Ok((cache, OrchestrateAggregateCacheLookup::Hit(entry)));
+        return Ok((cache, OrchestrateAggregateCacheLookup::Hit(Box::new(entry))));
     }
     cache.entries.remove(&selector_id);
     Ok((cache, OrchestrateAggregateCacheLookup::Invalidate))

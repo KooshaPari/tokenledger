@@ -13,6 +13,10 @@ use crate::cli::{IngestArgs, IngestProvider};
 use crate::models::*;
 use crate::utils::*;
 
+pub mod aggregation;
+pub mod parser;
+pub mod validation;
+
 pub fn run_ingest(args: IngestArgs) -> Result<()> {
     let ingest_started_at = Utc::now();
     let ingest_timer = Instant::now();

@@ -31,11 +31,11 @@ pub fn build_coverage_report(events: &[UsageEvent], pricing: &PricingBook) -> Co
         if !provider.models.contains_key(&model_name) {
             missing_models_by_provider
                 .entry(provider_name.clone())
-                .or_insert_with(HashSet::new)
+                .or_default()
                 .insert(model_name.clone());
             model_counts_by_provider
                 .entry(provider_name.clone())
-                .or_insert_with(BTreeMap::new)
+                .or_default()
                 .entry(model_name)
                 .and_modify(|count| *count += 1)
                 .or_insert(1);

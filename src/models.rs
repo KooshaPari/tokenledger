@@ -343,9 +343,20 @@ pub struct OrchestrateAggregateCacheMetrics {
 }
 
 pub enum OrchestrateAggregateCacheLookup {
-    Hit(OrchestrateAggregateCacheEntry),
+    Hit(Box<OrchestrateAggregateCacheEntry>),
     Miss,
     Invalidate,
+}
+
+#[derive(Debug, Clone)]
+pub struct PipelineStageSummaries {
+    pub ingest: OrchestrateIngestStageSummary,
+    pub pricing_reconcile: OrchestratePricingReconcileStageSummary,
+    pub monthly: OrchestrateStageSummary,
+    pub daily: OrchestrateStageSummary,
+    pub aggregate_cache: OrchestrateAggregateCacheMetrics,
+    pub bench: OrchestrateBenchStageSummary,
+    pub perf_gate: OrchestrateStageSummary,
 }
 
 #[derive(Debug, Clone, Serialize)]
