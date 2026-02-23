@@ -271,3 +271,53 @@ pub fn round2(v: f64) -> f64 {
 pub fn round4(v: f64) -> f64 {
     (v * 10_000.0).round() / 10_000.0
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_round2_basic() {
+        assert_eq!(round2(3.14159), 3.14);
+        assert_eq!(round2(1.234), 1.23);
+        assert_eq!(round2(1.999), 2.00);
+    }
+
+    #[test]
+    fn test_round2_zero() {
+        assert_eq!(round2(0.0), 0.0);
+    }
+
+    #[test]
+    fn test_round2_negative() {
+        assert_eq!(round2(-3.14159), -3.14);
+        assert_eq!(round2(-1.234), -1.23);
+    }
+
+    #[test]
+    fn test_round4_basic() {
+        assert_eq!(round4(3.141592), 3.1416);
+        assert_eq!(round4(1.23456), 1.2346);
+        assert_eq!(round4(1.99999), 2.0000);
+    }
+
+    #[test]
+    fn test_round4_zero() {
+        assert_eq!(round4(0.0), 0.0);
+    }
+
+    #[test]
+    fn test_round4_negative() {
+        assert_eq!(round4(-3.141592), -3.1416);
+        assert_eq!(round4(-1.23456), -1.2346);
+    }
+
+    #[test]
+    fn test_round2_and_round4_relationship() {
+        let value = 3.141592653589793;
+        let r2 = round2(value);
+        let r4 = round4(value);
+        assert_eq!(r2, 3.14);
+        assert_eq!(r4, 3.1416);
+    }
+}

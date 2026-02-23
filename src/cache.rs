@@ -169,3 +169,182 @@ pub fn resolve_model_alias(provider: &str, model: &str, pricing: &PricingBook) -
         .and_then(|p| p.model_aliases.get(model).cloned())
         .unwrap_or_else(|| model.to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+
+    #[test]
+    fn test_resolve_provider_alias_no_alias() {
+        let mut providers = std::collections::HashMap::new();
+        providers.insert(
+            "openai".to_string(),
+            ProviderPricing {
+                subscription_usd_month: 0.0,
+                models: std::collections::HashMap::new(),
+                model_aliases: std::collections::HashMap::new(),
+            },
+        );
+        let pricing = PricingBook {
+            providers,
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+
+        let resolved = resolve_provider_alias("openai", &pricing);
+        assert_eq!(resolved, "openai");
+    }
+
+    #[test]
+    fn test_resolve_provider_alias_with_alias() {
+        let mut providers = std::collections::HashMap::new();
+        providers.insert(
+            "openai".to_string(),
+            ProviderPricing {
+                subscription_usd_month: 0.0,
+                models: std::collections::HashMap::new(),
+                model_aliases: std::collections::HashMap::new(),
+            },
+        );
+        let mut provider_aliases = std::collections::HashMap::new();
+        provider_aliases.insert("oai".to_string(), "openai".to_string());
+        let pricing = PricingBook {
+            providers,
+            provider_aliases,
+            meta: None,
+        };
+
+        let resolved = resolve_provider_alias("oai", &pricing);
+        assert_eq!(resolved, "openai");
+    }
+
+    #[test]
+    fn test_resolve_model_alias_no_alias() {
+        let mut models = std::collections::HashMap::new();
+        models.insert(
+            "gpt-4".to_string(),
+            ModelRate {
+                input_usd_per_mtok: 0.5,
+                output_usd_per_mtok: 1.0,
+                cache_write_usd_per_mtok: None,
+                cache_read_usd_per_mtok: None,
+                tool_input_usd_per_mtok: None,
+                tool_output_usd_per_mtok: None,
+            },
+        );
+        let mut providers = std::collections::HashMap::new();
+        providers.insert(
+            "openai".to_string(),
+            ProviderPricing {
+                subscription_usd_month: 0.0,
+                models,
+                model_aliases: std::collections::HashMap::new(),
+            },
+        );
+        let pricing = PricingBook {
+            providers,
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+
+        let resolved = resolve_model_alias("openai", "gpt-4", &pricing);
+        assert_eq!(resolved, "gpt-4");
+    }
+
+    #[test]
+    fn test_resolve_model_alias_with_alias() {
+        let mut models = std::collections::HashMap::new();
+        models.insert(
+            "gpt-4".to_string(),
+            ModelRate {
+                input_usd_per_mtok: 0.5,
+                output_usd_per_mtok: 1.0,
+                cache_write_usd_per_mtok: None,
+                cache_read_usd_per_mtok: None,
+                tool_input_usd_per_mtok: None,
+                tool_output_usd_per_mtok: None,
+            },
+        );
+        let mut model_aliases = std::collections::HashMap::new();
+        model_aliases.insert("gpt-4-turbo".to_string(), "gpt-4".to_string());
+        let mut providers = std::collections::HashMap::new();
+        providers.insert(
+            "openai".to_string(),
+            ProviderPricing {
+                subscription_usd_month: 0.0,
+                models,
+                model_aliases,
+            },
+        );
+        let pricing = PricingBook {
+            providers,
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+
+        let resolved = resolve_model_alias("openai", "gpt-4-turbo", &pricing);
+        assert_eq!(resolved, "gpt-4");
+    }
+
+    #[test]
+    fn test_build_coverage_report_empty_events() {
+        let pricing = PricingBook {
+            providers: std::collections::HashMap::new(),
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+        let events: Vec<UsageEvent> = vec![];
+
+        let report = build_coverage_report(&events, &pricing);
+        assert_eq!(report.priced_count, 0);
+        assert_eq!(report.unpriced_count, 0);
+        assert!(report.missing_providers.is_empty());
+    }
+
+    #[test]
+    fn test_build_coverage_report_missing_provider() {
+        let pricing = PricingBook {
+            providers: std::collections::HashMap::new(),
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+        let events = vec![UsageEvent {
+            provider: "unknown".to_string(),
+            model: "gpt-4".to_string(),
+            session_id: "sess1".to_string(),
+            timestamp: Utc::now(),
+            usage: TokenUsage {
+                input_tokens: 100,
+                output_tokens: 100,
+                cache_write_tokens: 0,
+                cache_read_tokens: 0,
+                tool_input_tokens: 0,
+                tool_output_tokens: 0,
+            },
+        }];
+
+        let report = build_coverage_report(&events, &pricing);
+        assert_eq!(report.unpriced_count, 1);
+        assert!(report.missing_providers.contains(&"unknown".to_string()));
+    }
+
+    #[test]
+    fn test_resolve_ingest_providers_empty() {
+        let resolved = resolve_ingest_providers(&[]);
+        assert!(!resolved.is_empty());
+        assert!(resolved.len() >= 5);
+    }
+
+    #[test]
+    fn test_collect_unpriced_events_empty() {
+        let pricing = PricingBook {
+            providers: std::collections::HashMap::new(),
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+        let events: Vec<UsageEvent> = vec![];
+        let unpriced = collect_unpriced_events(&events, &pricing);
+        assert!(unpriced.is_empty());
+    }
+}

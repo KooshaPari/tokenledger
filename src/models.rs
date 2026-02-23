@@ -600,3 +600,177 @@ pub struct BenchTrendSample {
 fn default_generated_at() -> DateTime<Utc> {
     Utc::now()
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+
+    #[test]
+    fn test_token_usage_total() {
+        let usage = TokenUsage {
+            input_tokens: 100,
+            output_tokens: 200,
+            cache_write_tokens: 50,
+            cache_read_tokens: 25,
+            tool_input_tokens: 10,
+            tool_output_tokens: 15,
+        };
+        assert_eq!(usage.total(), 400);
+    }
+
+    #[test]
+    fn test_token_usage_total_partial() {
+        let usage = TokenUsage {
+            input_tokens: 100,
+            output_tokens: 200,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        assert_eq!(usage.total(), 300);
+    }
+
+    #[test]
+    fn test_token_usage_zero() {
+        let usage = TokenUsage {
+            input_tokens: 0,
+            output_tokens: 0,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        assert_eq!(usage.total(), 0);
+    }
+
+    #[test]
+    fn test_model_rate_creation() {
+        let rate = ModelRate {
+            input_usd_per_mtok: 0.5,
+            output_usd_per_mtok: 1.0,
+            cache_write_usd_per_mtok: Some(0.1),
+            cache_read_usd_per_mtok: Some(0.05),
+            tool_input_usd_per_mtok: None,
+            tool_output_usd_per_mtok: None,
+        };
+        assert_eq!(rate.input_usd_per_mtok, 0.5);
+        assert_eq!(rate.output_usd_per_mtok, 1.0);
+        assert_eq!(rate.cache_write_usd_per_mtok, Some(0.1));
+    }
+
+    #[test]
+    fn test_pricing_apply_summary_default() {
+        let summary = PricingApplySummary::default();
+        assert_eq!(summary.providers_added, 0);
+        assert_eq!(summary.models_added, 0);
+        assert_eq!(summary.aliases_added, 0);
+        assert_eq!(summary.models_skipped_existing, 0);
+    }
+
+    #[test]
+    fn test_pricing_apply_summary_equal() {
+        let s1 = PricingApplySummary {
+            providers_added: 1,
+            models_added: 2,
+            aliases_added: 3,
+            models_skipped_existing: 4,
+        };
+        let s2 = PricingApplySummary {
+            providers_added: 1,
+            models_added: 2,
+            aliases_added: 3,
+            models_skipped_existing: 4,
+        };
+        assert_eq!(s1, s2);
+    }
+
+    #[test]
+    fn test_usage_event_creation() {
+        let now = Utc::now();
+        let usage = TokenUsage {
+            input_tokens: 100,
+            output_tokens: 200,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        let event = UsageEvent {
+            provider: "openai".to_string(),
+            model: "gpt-4".to_string(),
+            session_id: "session123".to_string(),
+            timestamp: now,
+            usage,
+        };
+        assert_eq!(event.provider, "openai");
+        assert_eq!(event.model, "gpt-4");
+        assert_eq!(event.session_id, "session123");
+        assert_eq!(event.usage.total(), 300);
+    }
+
+    #[test]
+    fn test_provider_pricing_creation() {
+        let mut models = std::collections::HashMap::new();
+        models.insert(
+            "gpt-4".to_string(),
+            ModelRate {
+                input_usd_per_mtok: 0.5,
+                output_usd_per_mtok: 1.0,
+                cache_write_usd_per_mtok: None,
+                cache_read_usd_per_mtok: None,
+                tool_input_usd_per_mtok: None,
+                tool_output_usd_per_mtok: None,
+            },
+        );
+        let provider = ProviderPricing {
+            subscription_usd_month: 20.0,
+            models,
+            model_aliases: std::collections::HashMap::new(),
+        };
+        assert_eq!(provider.subscription_usd_month, 20.0);
+        assert_eq!(provider.models.len(), 1);
+    }
+
+    #[test]
+    fn test_pricing_book_creation() {
+        let mut providers = std::collections::HashMap::new();
+        providers.insert(
+            "openai".to_string(),
+            ProviderPricing {
+                subscription_usd_month: 0.0,
+                models: std::collections::HashMap::new(),
+                model_aliases: std::collections::HashMap::new(),
+            },
+        );
+        let book = PricingBook {
+            providers,
+            provider_aliases: std::collections::HashMap::new(),
+            meta: None,
+        };
+        assert_eq!(book.providers.len(), 1);
+        assert!(book.providers.contains_key("openai"));
+    }
+
+    #[test]
+    fn test_pricing_meta_default() {
+        let meta = PricingMeta::default();
+        assert_eq!(meta.updated_at, None);
+        assert_eq!(meta.source, None);
+        assert_eq!(meta.version, None);
+    }
+
+    #[test]
+    fn test_pricing_patch_default() {
+        let patch = PricingPatch::default();
+        assert!(patch.missing_providers.is_empty());
+        assert!(patch.missing_models_by_provider.is_empty());
+    }
+
+    #[test]
+    fn test_suggested_aliases_patch_default() {
+        let patch = SuggestedAliasesPatch::default();
+        assert!(patch.provider_aliases.is_empty());
+        assert!(patch.model_aliases_by_provider.is_empty());
+    }
+}

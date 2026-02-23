@@ -230,3 +230,145 @@ pub fn event_pricing<'a>(evt: &UsageEvent, pricing: &'a PricingBook) -> Option<(
     let rate = provider.models.get(&model_name)?;
     Some((provider, rate))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calc_variable_cost_basic() {
+        let usage = TokenUsage {
+            input_tokens: 1_000_000,
+            output_tokens: 1_000_000,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        let rate = ModelRate {
+            input_usd_per_mtok: 0.5,
+            output_usd_per_mtok: 1.0,
+            cache_write_usd_per_mtok: None,
+            cache_read_usd_per_mtok: None,
+            tool_input_usd_per_mtok: None,
+            tool_output_usd_per_mtok: None,
+        };
+        let cost = calc_variable_cost(&usage, &rate);
+        assert!((cost - 1.5).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_calc_variable_cost_with_cache() {
+        let usage = TokenUsage {
+            input_tokens: 1_000_000,
+            output_tokens: 1_000_000,
+            cache_write_tokens: 1_000_000,
+            cache_read_tokens: 1_000_000,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        let rate = ModelRate {
+            input_usd_per_mtok: 0.5,
+            output_usd_per_mtok: 1.0,
+            cache_write_usd_per_mtok: Some(0.1),
+            cache_read_usd_per_mtok: Some(0.05),
+            tool_input_usd_per_mtok: None,
+            tool_output_usd_per_mtok: None,
+        };
+        let cost = calc_variable_cost(&usage, &rate);
+        // 0.5 (input) + 1.0 (output) + 0.1 (cache_write) + 0.05 (cache_read) = 1.65
+        assert!((cost - 1.65).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_allocate_subscription_full() {
+        let allocated = allocate_subscription(1_000_000, 1_000_000, 100.0);
+        assert!((allocated - 100.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_allocate_subscription_half() {
+        let allocated = allocate_subscription(500_000, 1_000_000, 100.0);
+        assert!((allocated - 50.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_allocate_subscription_zero_total() {
+        let allocated = allocate_subscription(1_000, 0, 100.0);
+        assert_eq!(allocated, 0.0);
+    }
+
+    #[test]
+    fn test_allocate_subscription_zero_monthly() {
+        let allocated = allocate_subscription(1_000, 2_000, 0.0);
+        assert_eq!(allocated, 0.0);
+    }
+
+    #[test]
+    fn test_session_hash_consistency() {
+        let provider = "openai";
+        let session_id1 = "session123";
+        let session_id2 = "session123";
+        let session_id3 = "session456";
+
+        let hash1 = session_hash(provider, session_id1);
+        let hash2 = session_hash(provider, session_id2);
+        let hash3 = session_hash(provider, session_id3);
+
+        assert_eq!(hash1, hash2);
+        assert_ne!(hash1, hash3);
+    }
+
+    #[test]
+    fn test_session_hash_provider_affects_hash() {
+        let session_id = "session123";
+        let hash1 = session_hash("openai", session_id);
+        let hash2 = session_hash("anthropic", session_id);
+        assert_ne!(hash1, hash2);
+    }
+
+    #[test]
+    fn test_calc_variable_cost_zero_tokens() {
+        let usage = TokenUsage {
+            input_tokens: 0,
+            output_tokens: 0,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 0,
+            tool_output_tokens: 0,
+        };
+        let rate = ModelRate {
+            input_usd_per_mtok: 0.5,
+            output_usd_per_mtok: 1.0,
+            cache_write_usd_per_mtok: None,
+            cache_read_usd_per_mtok: None,
+            tool_input_usd_per_mtok: None,
+            tool_output_usd_per_mtok: None,
+        };
+        let cost = calc_variable_cost(&usage, &rate);
+        assert_eq!(cost, 0.0);
+    }
+
+    #[test]
+    fn test_calc_variable_cost_tool_tokens() {
+        let usage = TokenUsage {
+            input_tokens: 1_000_000,
+            output_tokens: 0,
+            cache_write_tokens: 0,
+            cache_read_tokens: 0,
+            tool_input_tokens: 1_000_000,
+            tool_output_tokens: 1_000_000,
+        };
+        let rate = ModelRate {
+            input_usd_per_mtok: 0.5,
+            output_usd_per_mtok: 1.0,
+            cache_write_usd_per_mtok: None,
+            cache_read_usd_per_mtok: None,
+            tool_input_usd_per_mtok: Some(0.2),
+            tool_output_usd_per_mtok: Some(0.3),
+        };
+        let cost = calc_variable_cost(&usage, &rate);
+        // 0.5 (input) + 0.2 (tool_input) + 0.3 (tool_output) = 1.0
+        assert!((cost - 1.0).abs() < 0.0001);
+    }
+}
