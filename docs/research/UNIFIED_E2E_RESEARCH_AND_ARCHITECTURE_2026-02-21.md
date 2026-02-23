@@ -1,3 +1,4 @@
+<DONE>
 # Unified E2E Research and Architecture (2026-02-21)
 
 ## Objective
