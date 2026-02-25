@@ -3,6 +3,7 @@ use clap::Parser;
 
 use tokenledger::analytics::{run_coverage, run_daily, run_monthly};
 use tokenledger::bench::run_bench;
+use tokenledger::benchmarks::run_benchmarks;
 use tokenledger::cli::{Cli, Command};
 use tokenledger::ingest::run_ingest;
 use tokenledger::orchestrate::run_orchestrate;
@@ -25,5 +26,6 @@ fn main() -> Result<()> {
         Command::Ingest(args) => run_ingest(args),
         Command::Bench(args) => run_bench(args),
         Command::Orchestrate(args) => run_orchestrate(args),
+        Command::Benchmarks(args) => run_benchmarks(args),
     }
 }

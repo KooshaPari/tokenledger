@@ -2,6 +2,8 @@
 
 All notable changes to **tokenledger** are documented here.
 
+> **Note**: The canonical changelog is in the project root [`../CHANGELOG.md`](../CHANGELOG.md).
+
 ## [Unreleased]
 
 ---

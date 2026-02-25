@@ -24,6 +24,7 @@ pub enum Command {
     Ingest(IngestArgs),
     Bench(BenchArgs),
     Orchestrate(OrchestrateArgs),
+    Benchmarks(BenchmarksArgs),
 }
 
 #[derive(Args, Debug, Clone)]
@@ -408,4 +409,74 @@ pub enum OnUnpricedAction {
 pub enum UiSnapshotMode {
     Compact,
     Extended,
+}
+
+// =============================================================================
+// BENCHMARKS CLI
+// =============================================================================
+
+#[derive(Parser, Debug)]
+pub struct BenchmarksArgs {
+    #[command(subcommand)]
+    pub command: BenchmarksCommand,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum BenchmarksCommand {
+    /// Refresh benchmarks from all sources
+    Refresh(RefreshBenchmarksArgs),
+    /// List available benchmarks
+    List(ListBenchmarksArgs),
+    /// Show benchmark for a specific model
+    Show(ShowBenchmarkArgs),
+    /// Validate benchmark configuration
+    Validate(ValidateBenchmarksArgs),
+}
+
+#[derive(Args, Debug)]
+pub struct RefreshBenchmarksArgs {
+    #[arg(long, help = "Artificial Analysis API key")]
+    pub aa_api_key: Option<String>,
+    
+    #[arg(long, help = "OpenRouter API key")]
+    pub openrouter_api_key: Option<String>,
+    
+    #[arg(long, default_value_t = false, help = "Skip API calls, use cache only")]
+    pub no_fetch: bool,
+    
+    #[arg(long, help = "Output file for benchmarks JSON")]
+    pub output: Option<PathBuf>,
+    
+    #[arg(long, help = "Comma-separated sources to refresh")]
+    pub sources: Option<String>,
+}
+
+#[derive(Args, Debug)]
+pub struct ListBenchmarksArgs {
+    #[arg(long, help = "Filter by source (aa, openrouter, manual)")]
+    pub source: Option<String>,
+    
+    #[arg(long, default_value_t = 20, help = "Limit number of results")]
+    pub limit: usize,
+    
+    #[arg(long, default_value = "table", help = "Output format (table, json)")]
+    pub output: String,
+    
+    #[arg(long, help = "Sort by field (intelligence, speed, cost)")]
+    pub sort_by: Option<String>,
+}
+
+#[derive(Args, Debug)]
+pub struct ShowBenchmarkArgs {
+    #[arg(help = "Model ID to show")]
+    pub model_id: String,
+    
+    #[arg(long, default_value = "table", help = "Output format")]
+    pub output: String,
+}
+
+#[derive(Args, Debug)]
+pub struct ValidateBenchmarksArgs {
+    #[arg(long, help = "Config file to validate")]
+    pub config: Option<PathBuf>,
 }
