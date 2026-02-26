@@ -1,1 +1,8 @@
 target/
+
+.env
+
+# Phenotype Config
+.phenotype/
+config.db
+*.key

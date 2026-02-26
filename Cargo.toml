@@ -17,6 +17,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.5"
 serde_yaml = "0.9"
+pheno-core = { path = "../phenotype-config/pheno-core" }
+pheno-db = { path = "../phenotype-config/pheno-db" }
 
 [dev-dependencies]
 tempfile = "3.14"

@@ -1,4 +1,5 @@
 pub mod analytics;
+pub mod phenotype_init;
 pub mod bench;
 pub mod benchmarks;
 pub mod cache;
