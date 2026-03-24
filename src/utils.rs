@@ -641,3 +641,72 @@ where
 pub fn normalize_alias_key(raw: &str) -> String {
     raw.to_lowercase().replace("_", "").replace("-", "")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bench_scenario_name() {
+        assert_eq!(bench_scenario_name(BenchScenario::ColdBackfill), "cold-backfill");
+        assert_eq!(bench_scenario_name(BenchScenario::WarmTail), "warm-tail");
+        assert_eq!(bench_scenario_name(BenchScenario::Burst), "burst");
+        assert_eq!(bench_scenario_name(BenchScenario::All), "all");
+    }
+
+    #[test]
+    fn test_parse_month_valid() {
+        let (year, month) = parse_month("2024-01").expect("should parse valid month");
+        assert_eq!(year, 2024);
+        assert_eq!(month, 1);
+
+        let (year, month) = parse_month("2024-12").expect("should parse valid month");
+        assert_eq!(year, 2024);
+        assert_eq!(month, 12);
+    }
+
+    #[test]
+    fn test_parse_month_invalid() {
+        assert!(parse_month("2024").is_err());
+        assert!(parse_month("invalid").is_err());
+        assert!(parse_month("2024-13").is_err());
+        assert!(parse_month("2024-00").is_err());
+    }
+
+    #[test]
+    fn test_normalize_alias_key() {
+        assert_eq!(normalize_alias_key("Claude-3"), "claude3");
+        assert_eq!(normalize_alias_key("GPT_4O"), "gpt4o");
+        assert_eq!(normalize_alias_key("GEMINI-PRO"), "geminipro");
+        assert_eq!(normalize_alias_key("llama-2-13b"), "llama213b");
+    }
+
+    #[test]
+    fn test_suggest_aliases() {
+        let candidates = vec!["claude-3".to_string(), "gpt-4o".to_string(), "gemini-pro".to_string()];
+
+        let suggestions = suggest_aliases("claude", &candidates);
+        assert!(suggestions.contains(&"claude-3".to_string()));
+        assert!(!suggestions.contains(&"gpt-4o".to_string()));
+
+        let suggestions = suggest_aliases("gpt", &candidates);
+        assert!(suggestions.contains(&"gpt-4o".to_string()));
+        assert!(!suggestions.contains(&"claude-3".to_string()));
+    }
+
+    #[test]
+    fn test_has_placeholder_marker() {
+        assert!(has_placeholder_marker("TODO: add price"));
+        assert!(has_placeholder_marker("todo"));
+        assert!(has_placeholder_marker("0.5x"));
+        assert!(has_placeholder_marker("EXample"));
+        assert!(!has_placeholder_marker("0.5"));
+        assert!(!has_placeholder_marker("1.5"));
+        assert!(!has_placeholder_marker("completed"));
+    }
+
+    #[test]
+    fn test_mtok_constant() {
+        assert_eq!(MTOK, 1_000_000.0);
+    }
+}

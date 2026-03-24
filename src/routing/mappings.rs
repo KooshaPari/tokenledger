@@ -211,17 +211,17 @@ mod tests {
         let (provider, rule) = resolve_provider("openai/gpt-4o");
         assert_eq!(provider, Some("openai".to_string()));
         assert_eq!(rule, MappingRule::Prefix);
-        
-        let (provider, rule) = resolve_provider("anthropic/claude-3-5-sonnet");
+
+        let (provider, _rule) = resolve_provider("anthropic/claude-3-5-sonnet");
         assert_eq!(provider, Some("anthropic".to_string()));
     }
-    
+
     #[test]
     fn test_normalize_model_id() {
-        let (canonical, rule) = normalize_model_id("openai/gpt-4o");
+        let (canonical, _rule) = normalize_model_id("openai/gpt-4o");
         assert_eq!(canonical, "gpt-4o");
-        
-        let (canonical, rule) = normalize_model_id("GPT-4O");
+
+        let (canonical, _rule) = normalize_model_id("GPT-4O");
         assert_eq!(canonical, "gpt-4o");
     }
     

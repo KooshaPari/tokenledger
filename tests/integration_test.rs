@@ -165,8 +165,7 @@ fn test_pricing_with_cache_tokens() {
 
 #[test]
 fn test_multiple_usage_events_aggregation() {
-    let events = vec![
-        UsageEvent {
+    let events = [UsageEvent {
             provider: "openai".to_string(),
             model: "gpt-4".to_string(),
             session_id: "session-1".to_string(),
@@ -193,8 +192,7 @@ fn test_multiple_usage_events_aggregation() {
                 tool_input_tokens: 0,
                 tool_output_tokens: 0,
             },
-        },
-    ];
+        }];
 
     let total_input: u64 = events.iter().map(|e| e.usage.input_tokens).sum();
     let total_output: u64 = events.iter().map(|e| e.usage.output_tokens).sum();

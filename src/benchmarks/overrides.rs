@@ -76,6 +76,7 @@ impl ModelOverride {
 }
 
 /// Manual overrides loader
+#[derive(Default)]
 pub struct ManualOverrides {
     overrides: HashMap<String, BenchmarkData>,
 }
@@ -129,13 +130,6 @@ impl ManualOverrides {
     }
 }
 
-impl Default for ManualOverrides {
-    fn default() -> Self {
-        Self {
-            overrides: HashMap::new(),
-        }
-    }
-}
 
 /// Example configuration
 pub const EXAMPLE_CONFIG: &str = r#"

@@ -18,6 +18,7 @@ use tracing::info;
 
 /// Thegent adapter configuration
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct ThegentAdapterConfig {
     /// Path to thegent binary or module
     pub thegent_path: Option<String>,
@@ -25,14 +26,6 @@ pub struct ThegentAdapterConfig {
     pub enabled: bool,
 }
 
-impl Default for ThegentAdapterConfig {
-    fn default() -> Self {
-        Self {
-            thegent_path: None,
-            enabled: false, // Disabled by default - requires thegent to be installed
-        }
-    }
-}
 
 /// Thegent adapter for querying quality/speed/cost values
 pub struct ThegentAdapter {
