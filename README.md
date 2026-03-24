@@ -1,3 +1,7 @@
+![Build Status](https://github.com/Phenotype-Enterprise/tokenledger/actions/workflows/quality-gate.yml/badge.svg)
+![Security Audit](https://github.com/Phenotype-Enterprise/tokenledger/actions/workflows/security-guard.yml/badge.svg)
+![Policy Compliance](https://github.com/Phenotype-Enterprise/tokenledger/actions/workflows/policy-gate.yml/badge.svg)
+
 # tokenledger
 
 Enterprise-grade token management and pricing governance system for AI coding agents.
