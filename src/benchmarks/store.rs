@@ -7,7 +7,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 /// Source of benchmark data
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum BenchmarkSource {
     /// Artificial Analysis API
@@ -19,13 +19,8 @@ pub enum BenchmarkSource {
     /// Web scraping (future)
     WebScrape,
     /// Fallback/hardcoded values
+    #[default]
     Fallback,
-}
-
-impl Default for BenchmarkSource {
-    fn default() -> Self {
-        Self::Fallback
-    }
 }
 
 /// Unified benchmark data for a model

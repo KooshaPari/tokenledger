@@ -76,6 +76,7 @@ impl ModelOverride {
 }
 
 /// Manual overrides loader
+#[derive(Default)]
 pub struct ManualOverrides {
     overrides: HashMap<String, BenchmarkData>,
 }
@@ -126,14 +127,6 @@ impl ManualOverrides {
     /// Get all model IDs with overrides
     pub fn model_ids(&self) -> Vec<&String> {
         self.overrides.keys().collect()
-    }
-}
-
-impl Default for ManualOverrides {
-    fn default() -> Self {
-        Self {
-            overrides: HashMap::new(),
-        }
     }
 }
 

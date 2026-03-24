@@ -17,21 +17,12 @@ use std::process::Command;
 use tracing::info;
 
 /// Thegent adapter configuration
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ThegentAdapterConfig {
     /// Path to thegent binary or module
     pub thegent_path: Option<String>,
     /// Whether to enable thegent integration
     pub enabled: bool,
-}
-
-impl Default for ThegentAdapterConfig {
-    fn default() -> Self {
-        Self {
-            thegent_path: None,
-            enabled: false, // Disabled by default - requires thegent to be installed
-        }
-    }
 }
 
 /// Thegent adapter for querying quality/speed/cost values

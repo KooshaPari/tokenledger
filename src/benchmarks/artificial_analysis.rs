@@ -25,6 +25,7 @@ mod response {
 
     #[derive(Debug, Deserialize)]
     pub struct ApiResponse {
+        #[allow(dead_code)]
         pub status: u16,
         pub data: Vec<ModelEntry>,
     }
@@ -96,7 +97,7 @@ impl ArtificialAnalysisClient {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
             warn!("AA API returned error: {} - {}", status, text);
-            return Err(AaError::Api(format!("{} - {}", status, text)).into());
+            return Err(AaError::Api(format!("{} - {}", status, text)));
         }
 
         let data: response::ApiResponse = response.json().await?;

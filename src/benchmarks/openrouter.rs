@@ -87,7 +87,7 @@ impl OpenRouterClient {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
             warn!("OpenRouter API returned error: {} - {}", status, text);
-            return Err(OrError::Api(format!("{} - {}", status, text)).into());
+            return Err(OrError::Api(format!("{} - {}", status, text)));
         }
 
         let data: response::ApiResponse = response.json().await?;
@@ -127,8 +127,8 @@ impl OpenRouterClient {
             latency_e2e_ms: None,
             
             // Pricing
-            price_input_per_1m: parse_price(&entry.pricing.as_ref().map(|p| p.price_prompt.clone()).flatten()),
-            price_output_per_1m: parse_price(&entry.pricing.as_ref().map(|p| p.price_completion.clone()).flatten()),
+            price_input_per_1m: parse_price(&entry.pricing.as_ref().and_then(|p| p.price_prompt.clone())),
+            price_output_per_1m: parse_price(&entry.pricing.as_ref().and_then(|p| p.price_completion.clone())),
             price_cache_read_per_1m: None,
             price_cache_write_per_1m: None,
             
