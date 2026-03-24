@@ -17,15 +17,13 @@ use std::process::Command;
 use tracing::info;
 
 /// Thegent adapter configuration
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ThegentAdapterConfig {
     /// Path to thegent binary or module
     pub thegent_path: Option<String>,
     /// Whether to enable thegent integration
     pub enabled: bool,
 }
-
 
 /// Thegent adapter for querying quality/speed/cost values
 pub struct ThegentAdapter {
@@ -65,7 +63,7 @@ impl ThegentAdapter {
 
         // For now, this is a placeholder - we'd call thegent CLI
         // In practice, we'd spawn thegent process and parse JSON output
-        
+
         info!("Thegent quality indices requested but adapter not fully implemented");
         Err(ThegentError::NotImplemented)
     }
@@ -134,13 +132,13 @@ pub struct ThegentCostValue {
 pub enum ThegentError {
     #[error("Thegent is not available")]
     NotAvailable,
-    
+
     #[error("Thegent adapter not implemented")]
     NotImplemented,
-    
+
     #[error("Failed to execute thegent: {0}")]
     ExecutionError(String),
-    
+
     #[error("Failed to parse thegent output: {0}")]
     ParseError(String),
 }
