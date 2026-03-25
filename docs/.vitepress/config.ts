@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import { resolveDocsBase } from "../../../docs-hub/.vitepress/base.config"
+import { resolveDocsBase } from '../../../docs-hub/.vitepress/base.config'
 
 const docsBase = resolveDocsBase()
 
@@ -10,23 +10,18 @@ export default defineConfig({
   ignoreDeadLinks: true,
   themeConfig: {
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Specs', link: '/SPEC' },
-      { text: 'PRD', link: '/PRD' },
+      { text: 'Wiki', link: '/wiki/' },
+      { text: 'Development Guide', link: '/development-guide/' },
+      { text: 'Document Index', link: '/document-index/' },
+      { text: 'API', link: '/api/' },
+      { text: 'Roadmap', link: '/roadmap/' }
     ],
-    sidebar: [
-      {
-        text: 'Documentation',
-        items: [
-          { text: 'Overview', link: '/' },
-          { text: 'Specs', link: '/SPEC' },
-          { text: 'PRD', link: '/PRD' },
-          { text: 'Changelog', link: '/CHANGELOG' },
-        ]
-      }
-    ],
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/kooshapari/tokenledger' }
-    ]
+    sidebar: [{ text: 'Categories', items: [
+      { text: 'Wiki', link: '/wiki/' },
+      { text: 'Development Guide', link: '/development-guide/' },
+      { text: 'Document Index', link: '/document-index/' },
+      { text: 'API', link: '/api/' },
+      { text: 'Roadmap', link: '/roadmap/' }
+    ] }]
   }
 })
