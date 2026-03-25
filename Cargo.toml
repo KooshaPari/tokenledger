@@ -2,6 +2,8 @@
 name = "tokenledger"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Enterprise-grade token management and pricing governance system for AI coding agents"
 
 [dependencies]
 anyhow = "1.0"
