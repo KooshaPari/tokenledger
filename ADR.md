@@ -1,22 +1,19 @@
-# ADR - tokenledger Core Decisions
+# Architecture Decision Records - tokenledger
 
-## ADR-001: Rust Core for Aggregation
+## ADR-001: Rust for Performance-Critical Analytics
+**Status**: Accepted
+**Context**: Token analytics must process large event volumes at sub-second latency.
+**Decision**: Rust for core analytics engine with CLI interface.
+**Consequences**: Fast execution; memory safety; steep learning curve offset by Phenotype Rust ecosystem.
 
-- Status: Accepted
-- Context: Python/TypeScript implementations offer flexibility but can be slow for large live logs and repeated aggregation loops.
-- Decision: Build the analytics core in Rust with streaming JSONL parsing.
-- Consequence: Higher throughput and lower latency; adapter bridges can still be polyglot.
+## ADR-002: CSV-Based Pricing Ledger
+**Status**: Accepted
+**Context**: Model pricing data needs to be version-controlled and human-reviewable.
+**Decision**: Normalized CSV files with SQL schema for validation and seeding.
+**Consequences**: Easy to update via PRs; queryable via SQL views; no external DB dependency.
 
-## ADR-002: Normalized Event Contract
-
-- Status: Accepted
-- Context: Each provider exposes different log/database shapes.
-- Decision: All provider adapters emit a normalized JSONL event schema consumed by one cost engine.
-- Consequence: Provider-specific complexity is isolated at ingestion edges.
-
-## ADR-003: Blended Cost Model
-
-- Status: Accepted
-- Context: Token-only metrics understate real spend when subscriptions exist.
-- Decision: Monthly total = variable token cost + allocated subscription cost; allocation proportional to monthly token share.
-- Consequence: Fair cross-provider blended comparison with explicit assumptions.
+## ADR-003: Modular Crate Architecture
+**Status**: Accepted
+**Context**: Analytics, ingestion, pricing, and routing are distinct concerns.
+**Decision**: Single binary with modular source files; future extraction to crates as needed.
+**Consequences**: Simple build; clear module boundaries; ready for decomposition.

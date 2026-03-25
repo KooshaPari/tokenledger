@@ -1,10 +1,37 @@
 # Functional Requirements - tokenledger
 
-- FR-COST-001: System SHALL compute monthly variable token cost from per-model rate cards.
-- FR-COST-002: System SHALL include provider subscription allocation in monthly blended totals.
-- FR-COST-003: System SHALL compute blended `$ / MTok` globally, per provider, and per model.
-- FR-TOK-001: System SHALL report token type breakdown: input, output, cache write/read, tool input/output.
-- FR-SES-001: System SHALL report unique monthly session counts globally and by dimension.
-- FR-ING-001: System SHALL ingest normalized events from JSONL files and directories recursively.
-- FR-OUT-001: System SHALL support both human-readable table output and JSON output.
-- FR-TIP-001: System SHALL generate optimization tips based on measured token/cost signals.
+## FR-ING-001: Multi-Provider Ingestion
+The system SHALL ingest token usage events from multiple LLM providers.
+
+## FR-ING-002: CSV Source Support
+The system SHALL support CSV files as ingestion sources.
+
+## FR-ING-003: Streaming Ingestion
+The system SHALL support streaming ingestion for real-time usage audits.
+
+## FR-ANA-001: Monthly Cost Report
+The system SHALL generate blended monthly cost reports across providers and models.
+
+## FR-ANA-002: Per-Model Metrics
+Reports SHALL include per-model and per-provider $/MTok and session counts.
+
+## FR-ANA-003: Sub-Second Performance
+Monthly reports SHALL execute sub-second for <=100k events.
+
+## FR-TIP-001: Optimization Tips
+The tip engine SHALL emit at least one prioritized optimization suggestion from telemetry.
+
+## FR-PRC-001: Pricing Database
+The system SHALL maintain a normalized model-provider pricing ledger.
+
+## FR-PRC-002: Pareto Views
+The system SHALL provide Pareto-optimal model views based on cost/quality tradeoffs.
+
+## FR-RTE-001: Model Routing
+The system SHALL support routing decisions based on pricing and performance data.
+
+## FR-CLI-001: CLI Interface
+The system SHALL provide a CLI for ingestion, analytics, and report generation.
+
+## FR-CACHE-001: Analytics Caching
+The system SHALL cache computed analytics for repeated queries.
