@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 pub mod analytics;
 pub mod bench;
 pub mod benchmarks;
