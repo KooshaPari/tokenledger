@@ -1,9 +1,11 @@
 // Caching and aggregation logic for coverage reports and unpriced events
 
 use std::collections::{BTreeMap, HashSet};
+use std::fs::{self, File};
+use std::io::{BufWriter, Write};
 use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::Datelike;
 
 use crate::cli::IngestProvider;
@@ -126,15 +128,80 @@ pub fn collect_unpriced_events(events: &[UsageEvent], pricing: &PricingBook) -> 
 }
 
 pub fn maybe_write_unpriced_outputs(
-    _events: &[UsageEvent],
-    _unpriced: &[UsageEvent],
+    events: &[UsageEvent],
+    unpriced: &[UsageEvent],
     _pricing: &PricingBook,
     patch_path: Option<&Path>,
     unpriced_events_path: Option<&Path>,
 ) -> Result<()> {
-    if patch_path.is_some() || unpriced_events_path.is_some() {
-        // TODO: implement patch writing and unpriced events output
+    if let Some(path) = unpriced_events_path {
+        write_unpriced_jsonl(path, unpriced)?;
     }
+    if let Some(path) = patch_path {
+        write_unpriced_patch(path, events, unpriced)?;
+    }
+    Ok(())
+}
+
+fn write_unpriced_jsonl(path: &Path, events: &[UsageEvent]) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)
+                .with_context(|| format!("creating output directory {:?}", parent))?;
+        }
+    }
+    let file = File::create(path).with_context(|| format!("creating {:?}", path))?;
+    let mut writer = BufWriter::new(file);
+    for event in events {
+        serde_json::to_writer(&mut writer, event)
+            .with_context(|| format!("serializing event to {:?}", path))?;
+        writer
+            .write_all(b"\n")
+            .with_context(|| format!("writing newline to {:?}", path))?;
+    }
+    writer
+        .flush()
+        .with_context(|| format!("flushing {:?}", path))?;
+    Ok(())
+}
+
+fn write_unpriced_patch(path: &Path, events: &[UsageEvent], unpriced: &[UsageEvent]) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)
+                .with_context(|| format!("creating output directory {:?}", parent))?;
+        }
+    }
+    // Build a minimal patch listing missing provider:model pairs with event counts
+    let mut missing: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
+    for event in unpriced {
+        *missing
+            .entry(event.provider.clone())
+            .or_default()
+            .entry(event.model.clone())
+            .or_default() += 1;
+    }
+    let patch = serde_json::json!({
+        "generated_for_events": events.len(),
+        "unpriced_event_count": unpriced.len(),
+        "missing_providers": missing.keys().collect::<Vec<_>>(),
+        "stub_rates": missing.iter().map(|(provider, models)| {
+            (provider.clone(), serde_json::json!({
+                "subscription_usd_month": 0.0,
+                "models": models.keys().map(|m| (m.clone(), serde_json::json!({
+                    "input_usd_per_mtok": 0.0,
+                    "output_usd_per_mtok": 0.0,
+                    "_observed_count": models[m],
+                    "_note": "stub — fill in actual rates"
+                }))).collect::<serde_json::Map<_, _>>()
+            }))
+        }).collect::<serde_json::Map<_, _>>()
+    });
+    let mut file = File::create(path).with_context(|| format!("creating {:?}", path))?;
+    serde_json::to_writer_pretty(&mut file, &patch)
+        .with_context(|| format!("writing patch to {:?}", path))?;
+    file.write_all(b"\n")
+        .with_context(|| format!("writing newline to {:?}", path))?;
     Ok(())
 }
 
