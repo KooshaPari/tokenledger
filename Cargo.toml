@@ -1,11 +1,14 @@
-[package]
-name = "tokenledger"
+[workspace]
+resolver = "2"
+members = ["crates/pareto-rs", "crates/tokenledger"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Enterprise-grade token management and pricing governance system for AI coding agents"
+authors = ["KooshaPari <kooshapari@kooshapari.com>"]
 
-[dependencies]
+[workspace.dependencies]
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
@@ -19,6 +22,4 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 walkdir = "2.5"
 serde_yaml = "0.9"
-
-[dev-dependencies]
 tempfile = "3.14"
